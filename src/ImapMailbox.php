@@ -321,6 +321,43 @@ class ImapMailbox {
 	}
 
 	/**
+	 * Get the number of new mail messages
+	 * @return int
+	 */
+	public function countNewMails() {
+		$emails = imap_search($this->getImapStream(), 'UNSEEN', SE_UID, $this->serverEncoding);
+		return $emails?sizeof($emails):0;
+	}
+	
+	/*
+	* Is displayed in the page directory mailbox
+	*/
+	public function listmailbox(){
+		echo "<h1>Mailboxes</h1>\n";
+		$folders = imap_list($this->getImapStream(), $this->imapPath, "*");
+		if ($folders == false) {
+			echo "failed to retrieve folders:<br />imap_list failed: " . imap_last_error() . " <br>";
+		} else {
+			foreach ($folders as $val) {
+				//$val=str_replace($this->imapPath, "", imap_utf7_decode($var));//to  ISO-8859-1 
+				// Gmail邮箱目录采用的编码为"UTF7-IMAP"，因此如果要正确显示中文目录名称，需要针对中文目录名称进行UTF-8转码
+				// （反之，如果给出中文名字，需要访问gmail的目录，需要先执行UTF-8到UTF7-IMAP的逆向转码）
+				$val = mb_convert_encoding($val, "UTF-8", "UTF7-IMAP");//to utf-8
+				echo str_replace($this->imapPath, "", $val) . "<br />\n";
+			}
+		}
+	}
+	
+	/**
+	 * Re-open another mailbox, such as Outbox
+	 * @param string $box eg:'sent messages'
+	 * @return bool
+	 */
+	public function reopen($box){//重新打开另一信箱
+		return imap_reopen($this->getImapStream(),$this->imapPath. mb_convert_encoding($box, "UTF7-IMAP", "UTF-8"));
+	}
+	
+	/**
 	 * Retrieve the quota settings per user
 	 * @return array - FALSE in the case of call failure
 	 */
