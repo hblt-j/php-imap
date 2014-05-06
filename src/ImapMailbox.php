@@ -477,9 +477,7 @@ class ImapMailbox {
 				}
 			}
 		}
-		if(!empty($params['charset'])) {
-			$data = iconv(strtoupper($params['charset']), $this->serverEncoding . '//IGNORE', $data);
-		}
+		
 
 		// attachments
 		$attachmentId = $partStructure->ifid
@@ -511,6 +509,9 @@ class ImapMailbox {
 			$mail->addAttachment($attachment);
 		}
 		elseif($partStructure->type == 0 && $data) {
+			if(!empty($params['charset'])) {
+				$data = iconv(strtoupper($params['charset']), $this->serverEncoding . '//IGNORE', $data);
+			}
 			if(strtolower($partStructure->subtype) == 'plain') {
 				$mail->textPlain .= $data;
 			}
@@ -519,6 +520,9 @@ class ImapMailbox {
 			}
 		}
 		elseif($partStructure->type == 2 && $data) {
+			if(!empty($params['charset'])) {
+				$data = iconv(strtoupper($params['charset']), $this->serverEncoding . '//IGNORE', $data);
+			}
 			$mail->textPlain .= trim($data);
 		}
 		if(!empty($partStructure->parts)) {
